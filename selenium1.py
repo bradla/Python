@@ -55,3 +55,45 @@ driver.quit()
 # assert 'WebDriver' in driver.title
 
 # driver.quit()
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import time
+
+# Setup the driver (make sure you have the appropriate driver installed)
+driver = webdriver.Chrome()  # or Firefox(), Safari(), etc.
+
+try:
+    # Navigate to the login page
+    driver.get("https://example.com/login")
+    
+    # Wait for the page to load
+    time.sleep(2)
+    
+    # Find username and password fields and fill them
+    username_field = driver.find_element(By.ID, "username")  # or By.NAME, By.CSS_SELECTOR, etc.
+    password_field = driver.find_element(By.ID, "password")
+    
+    # Enter credentials
+    username_field.send_keys("your_username")
+    password_field.send_keys("your_password")
+    
+    # Find and click the login button
+    login_button = driver.find_element(By.XPATH, "//button[@type='submit']")
+    login_button.click()
+    
+    # Wait for login to complete and verify
+    time.sleep(3)
+    
+    # Check if login was successful (example)
+    if "dashboard" in driver.current_url:
+        print("Login successful!")
+    else:
+        print("Login failed")
+        
+finally:
+    # Close the browser
+    driver.quit()

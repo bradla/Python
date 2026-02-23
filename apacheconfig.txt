@@ -1,0 +1,91 @@
+LoadModule proxy_uwsgi_module modules/mod_proxy_uwsgi.so
+LoadModule wsgi_module modules/mod_wsgi.so
+ 
+
+<VirtualHost *:443>
+    ServerName www.anysite.com
+    ServerAlias anysite.com
+    DocumentRoot /srv/http/django/anysite
+
+    SSLEngine on
+    SSLCertificateFile /etc/letsencrypt/live/anysite.com/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/anysite.com/privkey.pem
+    Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+    Header always set X-Content-Type-Options nosniff
+    Header always set X-Frame-Options DENY
+
+    WSGIDaemonProcess anysite \
+        python-path=/srv/http/django/anysite:/srv/http/django/anysite/django1/lib/python3.13/site-packages \
+        python-home=/srv/http/django/anysite/django1 \
+        processes=2 \
+        threads=15 \
+        display-name=anysite-wsgi
+
+    WSGIScriptAlias / /srv/http/django/anysite/anysite/wsgi.py process-group=anysite application-group=%{GLOBAL}
+
+    <Directory /srv/http/django/anysite>
+      <Files wsgi.py>
+        Require all granted
+      </Files>
+        WSGIApplicationGroup %{GLOBAL}
+        Require all granted
+    </Directory>
+
+    Alias /robots.txt \
+        /srv/http/django/anysite/static/robots.txt
+
+    Alias /media/ /srv/http/django/anysite/media/
+    <Directory /srv/http/django/anysite/media>
+      Require all granted
+    </Directory>
+      Alias /static/ /srv/http/django/anysite/static/
+    <Directory /srv/http/django/anysite/static>
+      Require all granted
+    </Directory>
+
+    ErrorLog "/var/log/httpd/https_anysite.com-error.log"
+    CustomLog "/var/log/httpd/https_anysite.com-access.log"common
+
+    Include /etc/letsencrypt/options-ssl-apache.conf
+    SSLCertificateFile /etc/letsencrypt/live/anysite.com/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/anysite.com/privkey.pem
+</VirtualHost>
+
+<VirtualHost *:80>
+    ServerName anysite.com
+    ServerAlias www.anysite.com
+    ServerAdmin webmaster@anysite.com
+    DocumentRoot /srv/http/django/anysite
+
+    WSGIDaemonProcess anysite1 \
+        python-path=/srv/http/django/anysite:/srv/http/django/anysite/django1/lib/python3.13/site-packages \
+        python-home=/srv/http/django/anysite/django1 \
+        processes=2 \
+        threads=15 \
+        display-name=anysite1-wsgi
+
+    WSGIScriptAlias / /srv/http/django/anysite/anysite/wsgi.py \
+        process-group=anysite1 \
+        application-group=%{GLOBAL}
+
+    <Directory /srv/http/django/anysite>
+      <Files wsgi.py>
+        Require all granted
+      </Files>
+        WSGIApplicationGroup %{GLOBAL}
+        Require all granted
+    </Directory>
+
+    Alias /media/ /srv/http/django/anysite/media/
+    <Directory /srv/http/django/anysite/media>
+      Require all granted
+    </Directory>
+
+    Alias /static/ /srv/http/django/anysite/static/
+    <Directory /srv/http/django/anysite/static>
+      Require all granted
+    </Directory>
+
+    ErrorLog "/var/log/httpd/anysite.com-error.log"
+    CustomLog "/var/log/httpd/anysite.com-access.log" common
+</VirtualHost>

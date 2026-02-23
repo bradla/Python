@@ -1,3 +1,5 @@
+git remote set-url origin git@github.com:bradla/Python.git 
+
 LoadModule proxy_uwsgi_module modules/mod_proxy_uwsgi.so
 LoadModule wsgi_module modules/mod_wsgi.so
  
